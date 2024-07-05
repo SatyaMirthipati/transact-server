@@ -1,4 +1,9 @@
-import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import moment from 'moment';
 import { CreateUserDto, QueryUserDto } from './dto/user.dto';
 import { User } from './entities/user.entity';
@@ -79,6 +84,12 @@ export class UsersService {
 
   async findOne(id: number) {
     try {
+      const user: User = await User.findOne({ where: { id } });
+      if (!user) {
+        throw new NotFoundException(`User not found with id ${id}`);
+      }
+
+      return user;
     } catch (error) {
       console.log(error);
       throw new HttpException(error.message, error.status);
@@ -87,6 +98,10 @@ export class UsersService {
 
   async update(id: number, body: CreateUserDto) {
     try {
+      const user: User = await User.findOne({ where: { id } });
+      if (!user) {
+        throw new NotFoundException(`User not found with id ${id}`);
+      }
     } catch (error) {
       console.log(error);
       throw new HttpException(error.message, error.status);
