@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 
 @Module({
@@ -21,9 +22,10 @@ import { UsersModule } from './users/users.module';
       database: process.env.DATABASE_NAME,
       synchronize: true,
       autoLoadEntities: true,
-      logging: false,
+      logging: true,
       namingStrategy: new SnakeNamingStrategy(),
     }),
+    AuthModule,
     UsersModule,
   ],
   controllers: [AppController],

@@ -1,20 +1,8 @@
-import {
-  BadRequestException,
-  HttpException,
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import * as bcrypt from 'bcrypt';
+import { User } from 'src/users/entities/user.entity';
 import { OtpType, UserTypes } from 'src/utils/constants';
-import {
-  AdminLoginDto,
-  OtpDto,
-  RegisterByOtpDto,
-  ResetPasswordDto,
-  VerifyOtpDto,
-} from './dto/auth.dto';
+import { OtpDto, RegisterByOtpDto, VerifyOtpDto } from './dto/auth.dto';
 
 @Injectable()
 export class AuthService {
@@ -45,40 +33,39 @@ export class AuthService {
     }
   }
 
-  // async verifyOtp(body: VerifyOtpDto) {
-  //   try {
-  //     const decoded: any = this.jwtService.decode(body.token);
+  async verifyOtp(body: VerifyOtpDto) {
+    try {
+      const decoded: any = this.jwtService.decode(body.token);
 
-  //     const { mobileNumber, email, otp } = decoded;
-  //     const newUser = await this.userModel
-  //       .findOne({
-  //         $or: [{ mobileNumber: mobileNumber }, { email: email }],
-  //       })
-  //       .exec();
+      const { mobile, email, otp } = decoded;
+      const newUser = await User.createQueryBuilder('user')
+        .where('user.mobile = :mobile', { mobile })
+        .orWhere('user.email = :email', { email })
+        .getOne();
 
-  //     if (otp === body.otp) {
-  //       if (newUser) {
-  //         await newUser.save();
-  //         return await this.login(newUser);
-  //       } else {
-  //         return await this.registerThroughOtp(mobileNumber, email);
-  //       }
-  //     } else {
-  //       throw new BadRequestException('Otp is invalid');
-  //     }
-  //   } catch (error) {
-  //     console.log(error);
-  //     throw new HttpException(error.message, error.status);
-  //   }
-  // }
+      if (parseInt(otp) === body.otp) {
+        if (newUser) {
+          await newUser.save();
+          return await this.login(newUser);
+        } else {
+          return await this.registerThroughOtp(mobile, email);
+        }
+      } else {
+        throw new BadRequestException('Otp is invalid');
+      }
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(error.message, error.status);
+    }
+  }
 
-  // async login(user: User) {
-  //   const payload = { userId: user.id, mobile: user.mobileNumber };
-  //   return {
-  //     access_token: this.jwtService.sign(payload),
-  //     userExists: true,
-  //   };
-  // }
+  async login(user: User) {
+    const payload = { userId: user.id, mobile: user.mobile };
+    return {
+      access_token: this.jwtService.sign(payload),
+      userExists: true,
+    };
+  }
 
   async registerThroughOtp(mobile: string, email: string) {
     const payload = { mobile: mobile, email: email, time: new Date() };
@@ -88,49 +75,47 @@ export class AuthService {
     };
   }
 
-  // async registerByOtp(body: RegisterByOtpDto) {
-  //   try {
-  //     const mobile = await this.userModel
-  //       .findOne({
-  //         $or: [{ mobileNumber: body.mobile }, { email: body.email }],
-  //       })
-  //       .exec();
-  //     if (mobile) {
-  //       throw new BadRequestException(
-  //         `A user with exists with email ${body.email} or mobile number ${body.mobile}`,
-  //       );
-  //     }
+  async registerByOtp(body: RegisterByOtpDto) {
+    try {
+      const mobile = await User.createQueryBuilder('user')
+        .where('user.mobile = :mobile', { mobile: body.mobile })
+        .orWhere('user.email = :email', { email: body.email })
+        .getOne();
+      if (mobile) {
+        throw new BadRequestException(
+          `A user with exists with email ${body.email} or mobile number ${body.mobile}`,
+        );
+      }
 
-  //     const payload = this.jwtService.verify(body.token);
-  //     let nMobile: string;
-  //     let nEmail: string;
+      const payload = this.jwtService.verify(body.token);
+      let nMobile: string;
+      let nEmail: string;
 
-  //     if (payload.mobile) {
-  //       nMobile = payload.mobile.toString();
-  //     } else {
-  //       nEmail = payload.email.toString();
-  //     }
+      if (payload.mobile) {
+        nMobile = payload?.mobile?.toString();
+      } else {
+        nEmail = payload?.email?.toString();
+      }
 
-  //     const vendorStatus = {
-  //       status: vendorRequestStatus.PENDING,
-  //       comments: '',
-  //       images: [],
-  //     };
+      const user = new User();
+      user.name = body.name;
+      user.mobile = body.mobile;
+      user.email = body.email;
+      user.role = body.role || UserTypes.USER;
+      user.dateOfBirth = body.dateOfBirth;
+      user.age = body.age;
+      user.gender = body.gender;
+      user.address = body.address;
+      user.password = body.mobile;
+      user.imageKey = body.imageKey;
+      await user.save();
 
-  //     const user = await this.userModel.create({
-  //       firstName: body.firstName,
-  //       lastName: body.lastName,
-  //       mobileNumber: body.mobile || nMobile,
-  //       email: body.email || nEmail,
-  //       vendorStatus: [vendorStatus],
-  //     });
-
-  //     return await this.login(user);
-  //   } catch (error) {
-  //     console.log(error);
-  //     throw new HttpException(error.message, error.status);
-  //   }
-  // }
+      return await this.login(user);
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(error.message, error.status);
+    }
+  }
 
   // async adminLogin(body: AdminLoginDto) {
   //   try {

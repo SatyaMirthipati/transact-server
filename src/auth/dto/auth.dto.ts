@@ -1,11 +1,12 @@
 import {
   IsIn,
   IsNotEmpty,
+  IsNumber,
   IsOptional,
   IsString,
   ValidateIf,
 } from 'class-validator';
-import { OtpType } from 'src/utils/constants';
+import { OtpType, UserTypes } from 'src/utils/constants';
 
 export class OtpDto {
   @IsNotEmpty()
@@ -25,8 +26,8 @@ export class OtpDto {
 
 export class VerifyOtpDto {
   @IsNotEmpty()
-  @IsString()
-  otp: string;
+  @IsNumber()
+  otp: number;
 
   @IsNotEmpty()
   @IsString()
@@ -36,23 +37,44 @@ export class VerifyOtpDto {
 export class RegisterByOtpDto {
   @IsNotEmpty()
   @IsString()
-  firstName: string;
+  token: string;
 
   @IsNotEmpty()
   @IsString()
-  lastName: string;
+  name: string;
 
-  @IsOptional()
+  @IsNotEmpty()
   @IsString()
   mobile: string;
 
-  @IsOptional()
+  @IsNotEmpty()
   @IsString()
   email: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
-  token: string;
+  @IsIn(Object.keys(UserTypes))
+  role: string;
+
+  @IsOptional()
+  @IsString()
+  dateOfBirth: string;
+
+  @IsOptional()
+  @IsNumber()
+  age: number;
+
+  @IsOptional()
+  @IsString()
+  gender: string;
+
+  @IsOptional()
+  @IsString()
+  address: string;
+
+  @IsOptional()
+  @IsString()
+  imageKey: string;
 }
 
 export class AdminLoginDto {
