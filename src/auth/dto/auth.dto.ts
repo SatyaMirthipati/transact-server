@@ -61,10 +61,6 @@ export class RegisterByOtpDto {
   dateOfBirth: string;
 
   @IsOptional()
-  @IsNumber()
-  age: number;
-
-  @IsOptional()
   @IsString()
   gender: string;
 

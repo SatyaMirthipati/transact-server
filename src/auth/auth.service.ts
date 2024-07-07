@@ -1,5 +1,6 @@
 import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import * as moment from 'moment';
 import { User } from 'src/users/entities/user.entity';
 import { OtpType, UserTypes } from 'src/utils/constants';
 import { OtpDto, RegisterByOtpDto, VerifyOtpDto } from './dto/auth.dto';
@@ -97,13 +98,16 @@ export class AuthService {
         nEmail = payload?.email?.toString();
       }
 
+      const dateOfBirth = moment(body.dateOfBirth);
+      const age: number = moment().diff(dateOfBirth, 'years');
+
       const user = new User();
       user.name = body.name;
       user.mobile = body.mobile;
       user.email = body.email;
       user.role = body.role || UserTypes.USER;
       user.dateOfBirth = body.dateOfBirth;
-      user.age = body.age;
+      user.age = age;
       user.gender = body.gender;
       user.address = body.address;
       user.password = body.mobile;
