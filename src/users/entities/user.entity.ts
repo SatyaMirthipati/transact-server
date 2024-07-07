@@ -19,34 +19,34 @@ export class User extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: String, nullable: false })
+  @Column({ type: 'varchar', nullable: false })
   name: string;
 
-  @Column({ type: String, default: UserTypes.USER })
+  @Column({ type: 'varchar', default: UserTypes.USER })
   role: string;
 
   @Column({ type: 'date', nullable: false })
   dateOfBirth: string;
 
-  @Column({ type: String, unique: true, nullable: false })
+  @Column({ type: 'varchar', unique: true, nullable: false })
   mobile: string;
 
-  @Column({ type: String, unique: true, nullable: false })
+  @Column({ type: 'varchar', unique: true, nullable: false })
   email: string;
 
-  @Column({ type: String, nullable: false })
+  @Column({ type: 'varchar', nullable: false })
   password: string;
 
-  @Column({ type: Number, nullable: false })
+  @Column({ type: 'int', nullable: false })
   age: number;
 
-  @Column({ type: String, nullable: false })
+  @Column({ type: 'varchar', nullable: false })
   gender: string;
 
-  @Column({ type: String, nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   address: string;
 
-  @Column({ type: String, nullable: true })
+  @Column({ type: 'varchar', nullable: true })
   imageKey: string;
 
   @ManyToMany(() => Category)
