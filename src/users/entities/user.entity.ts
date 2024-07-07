@@ -1,4 +1,5 @@
 import { compare, hash } from 'bcrypt';
+import { Category } from 'src/categories/entities/category.entity';
 import { UserTypes } from 'src/utils/constants';
 import {
   AfterLoad,
@@ -7,6 +8,8 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinTable,
+  ManyToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -45,6 +48,10 @@ export class User extends BaseEntity {
 
   @Column({ type: String, nullable: true })
   imageKey: string;
+
+  @ManyToMany(() => Category)
+  @JoinTable({ name: 'users_ids_categories_ids' })
+  categories: Category[];
 
   @CreateDateColumn()
   createdAt: string;

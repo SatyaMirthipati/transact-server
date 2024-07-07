@@ -4,15 +4,20 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import moment from 'moment';
+import * as moment from 'moment';
+import { Category } from 'src/categories/entities/category.entity';
+import { In } from 'typeorm';
 import { CreateUserDto, QueryUserDto } from './dto/user.dto';
 import { User } from './entities/user.entity';
 
 @Injectable()
 export class UsersService {
+  // constructor(@InjectEntityManager() private manager: EntityManager) {}
+
   async create(body: CreateUserDto) {
     try {
-      const existing = await User.createQueryBuilder('user')
+      // const queryRunner = this.manager.connection.createQueryRunner();
+      const existing: User = await User.createQueryBuilder('user')
         .where('user.mobile= :mobile', { mobile: body.mobile })
         .orWhere('user.email= :email', { email: body.email })
         .getOne();
@@ -25,17 +30,22 @@ export class UsersService {
       const dateOfBirth = moment(body.dateOfBirth);
       const age: number = moment().diff(dateOfBirth, 'years');
 
+      const categories: Category[] = await Category.findBy({
+        id: In(body.categoryIds),
+      });
+
       const user = new User();
       user.name = body.name;
       user.role = body.role;
       user.mobile = body.mobile;
       user.email = body.email;
-      user.password = body.password;
+      user.password = body.mobile;
       user.dateOfBirth = body.dateOfBirth;
       user.age = age;
       user.gender = body.gender;
       user.address = body.address;
       user.imageKey = body.imageKey;
+      user.categories = categories;
       await user.save();
 
       return user;

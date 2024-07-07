@@ -1,4 +1,5 @@
 import {
+  IsArray,
   IsIn,
   IsNotEmpty,
   IsNumber,
@@ -31,10 +32,6 @@ export class CreateUserDto {
 
   @IsNotEmpty()
   @IsString()
-  password: string;
-
-  @IsNotEmpty()
-  @IsString()
   gender: string;
 
   @IsOptional()
@@ -44,6 +41,11 @@ export class CreateUserDto {
   @IsOptional()
   @IsString()
   imageKey: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsNotEmpty()
+  categoryIds: number[];
 }
 
 export class QueryUserDto {

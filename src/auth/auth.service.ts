@@ -1,8 +1,10 @@
 import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as moment from 'moment';
+import { Category } from 'src/categories/entities/category.entity';
 import { User } from 'src/users/entities/user.entity';
 import { OtpType, UserTypes } from 'src/utils/constants';
+import { In } from 'typeorm';
 import { OtpDto, RegisterByOtpDto, VerifyOtpDto } from './dto/auth.dto';
 
 @Injectable()
@@ -101,6 +103,13 @@ export class AuthService {
       const dateOfBirth = moment(body.dateOfBirth);
       const age: number = moment().diff(dateOfBirth, 'years');
 
+      let categories: Category[];
+      if (body?.categoryIds?.length > 0) {
+        categories = await Category.findBy({
+          id: In(body.categoryIds),
+        });
+      }
+
       const user = new User();
       user.name = body.name;
       user.mobile = body.mobile;
@@ -112,6 +121,7 @@ export class AuthService {
       user.address = body.address;
       user.password = body.mobile;
       user.imageKey = body.imageKey;
+      user.categories = categories;
       await user.save();
 
       return await this.login(user);

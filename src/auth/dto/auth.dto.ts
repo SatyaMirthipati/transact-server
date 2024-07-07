@@ -1,4 +1,5 @@
 import {
+  IsArray,
   IsIn,
   IsNotEmpty,
   IsNumber,
@@ -71,6 +72,11 @@ export class RegisterByOtpDto {
   @IsOptional()
   @IsString()
   imageKey: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsNotEmpty()
+  categoryIds: number[];
 }
 
 export class AdminLoginDto {
