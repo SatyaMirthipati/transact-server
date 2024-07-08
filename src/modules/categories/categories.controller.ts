@@ -10,7 +10,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { JwtAuthGuard } from 'src/auth/jwt/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/jwt/jwt-auth.guard';
 import { CategoriesService } from './categories.service';
 import { CreateCategoryDto, QueryCategoryDto } from './dto/category.dto';
 

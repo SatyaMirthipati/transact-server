@@ -1,4 +1,5 @@
 import { compare, hash } from 'bcrypt';
+import { Bank } from 'src/banks/entities/bank.entity';
 import { Category } from 'src/categories/entities/category.entity';
 import { UserTypes } from 'src/utils/constants';
 import {
@@ -10,6 +11,7 @@ import {
   Entity,
   JoinTable,
   ManyToMany,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -52,6 +54,9 @@ export class User extends BaseEntity {
   @ManyToMany(() => Category)
   @JoinTable({ name: 'users_ids_categories_ids' })
   categories: Category[];
+
+  @OneToMany(() => Bank, (bank) => bank.user)
+  bank: Bank[];
 
   @CreateDateColumn()
   createdAt: string;

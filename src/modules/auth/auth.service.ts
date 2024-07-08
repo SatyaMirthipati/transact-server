@@ -1,11 +1,11 @@
 import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as moment from 'moment';
-import { Category } from 'src/categories/entities/category.entity';
-import { User } from 'src/users/entities/user.entity';
 import { OtpType, UserTypes } from 'src/utils/constants';
 import { In } from 'typeorm';
 import { OtpDto, RegisterByOtpDto, VerifyOtpDto } from './dto/auth.dto';
+import { User } from '../users/entities/user.entity';
+import { Category } from '../categories/entities/category.entity';
 
 @Injectable()
 export class AuthService {

@@ -5,8 +5,8 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import * as moment from 'moment';
-import { Category } from 'src/categories/entities/category.entity';
 import { In } from 'typeorm';
+import { Category } from '../categories/entities/category.entity';
 import { CreateUserDto, QueryUserDto } from './dto/user.dto';
 import { User } from './entities/user.entity';
 
