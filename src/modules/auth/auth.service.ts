@@ -3,9 +3,9 @@ import { JwtService } from '@nestjs/jwt';
 import * as moment from 'moment';
 import { OtpType, UserTypes } from 'src/utils/constants';
 import { In } from 'typeorm';
-import { OtpDto, RegisterByOtpDto, VerifyOtpDto } from './dto/auth.dto';
-import { User } from '../users/entities/user.entity';
 import { Category } from '../categories/entities/category.entity';
+import { User } from '../users/entities/user.entity';
+import { OtpDto, RegisterByOtpDto, VerifyOtpDto } from './dto/auth.dto';
 
 @Injectable()
 export class AuthService {
@@ -17,7 +17,7 @@ export class AuthService {
 
       if (body.type === OtpType.MOBILE) {
         const token = this.jwtService.sign({
-          mobileNumber: body.mobile,
+          mobile: body.mobile,
           otp: otp.toString(),
         });
 
@@ -45,6 +45,11 @@ export class AuthService {
         .where('user.mobile = :mobile', { mobile })
         .orWhere('user.email = :email', { email })
         .getOne();
+
+      console.log(newUser);
+      console.log('mobile', mobile);
+      console.log('email', email);
+      console.log('email', otp);
 
       if (parseInt(otp) === body.otp) {
         if (newUser) {
