@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthModule } from 'src/modules/auth/auth.module';
+import { BanksModule } from 'src/modules/banks/banks.module';
 import { CategoriesModule } from 'src/modules/categories/categories.module';
 import { UsersModule } from 'src/modules/users/users.module';
 import { SnakeNamingStrategy } from 'typeorm-naming-strategies';
@@ -29,6 +30,7 @@ import { AppService } from './app.service';
     AuthModule,
     UsersModule,
     CategoriesModule,
+    BanksModule,
   ],
   controllers: [AppController],
   providers: [AppService],
