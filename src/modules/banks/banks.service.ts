@@ -7,17 +7,23 @@ import {
 } from '@nestjs/common';
 import { Not } from 'typeorm';
 import { User } from '../users/entities/user.entity';
+import { UserRepository } from '../users/repository/user.repository';
 import { BanksQueryDto, CreateBankDto } from './dto/bank.dto';
 import { Bank } from './entities/bank.entity';
 import { BankRepository } from './repository/bank.repository';
 
 @Injectable()
 export class BanksService {
-  constructor(private readonly bankRepository: BankRepository) {}
+  constructor(
+    private readonly bankRepository: BankRepository,
+    private readonly userRepository: UserRepository,
+  ) {}
 
   async create(body: CreateBankDto) {
     try {
-      const user: User = await User.findOneBy({ id: body.userId });
+      const user: User = await this.userRepository.findOneBy({
+        id: body.userId,
+      });
       if (!user) {
         throw new NotFoundException(`User not found with id ${body.userId}`);
       }
@@ -104,6 +110,13 @@ export class BanksService {
         throw new NotFoundException(`Bank not found with id ${id}`);
       }
 
+      const user: User = await this.userRepository.findOneBy({
+        id: body.userId,
+      });
+      if (!user) {
+        throw new NotFoundException(`User not found with id ${body.userId}`);
+      }
+
       const existing = await this.bankRepository.findOne({
         where: { accountNumber: body.accountNumber, id: Not(id) },
       });
@@ -111,7 +124,8 @@ export class BanksService {
         throw new BadRequestException('Bank details already exists');
       }
 
-      bank.userId = body.userId;
+      bank.userId = user.id;
+      bank.user = user;
       bank.name = body.name;
       bank.accountNumber = body.accountNumber;
       bank.ifscCode = body.ifscCode;
