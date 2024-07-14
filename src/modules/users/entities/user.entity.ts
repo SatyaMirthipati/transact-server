@@ -1,6 +1,6 @@
 import { compare, hash } from 'bcrypt';
-import { Bank } from 'src/banks/entities/bank.entity';
-import { Category } from 'src/categories/entities/category.entity';
+import { Bank } from 'src/modules/banks/entities/bank.entity';
+import { Category } from 'src/modules/categories/entities/category.entity';
 import { UserTypes } from 'src/utils/constants';
 import {
   AfterLoad,
