@@ -6,13 +6,18 @@ import {
 } from '@nestjs/common';
 import { CreateCategoryDto, QueryCategoryDto } from './dto/category.dto';
 import { Category } from './entities/category.entity';
+import { CategoryRepository } from './repository/category.repository';
 
 @Injectable()
 export class CategoriesService {
+  constructor(private readonly categoryRepository: CategoryRepository) {}
+
   async create(body: CreateCategoryDto) {
     try {
       const categoryName = body.name?.toLowerCase();
-      const existing = await Category.createQueryBuilder('category')
+
+      const existing = await this.categoryRepository
+        .createQueryBuilder('category')
         .where('LOWER(category.name) LIKE :name', { name: `%${categoryName}%` })
         .getOne();
       if (existing) {
@@ -23,7 +28,7 @@ export class CategoriesService {
 
       const category = new Category();
       category.name = body.name;
-      return await category.save();
+      return await this.categoryRepository.save(category);
     } catch (error) {
       console.log(error);
       throw new HttpException(error.message, error.status);
@@ -32,7 +37,7 @@ export class CategoriesService {
 
   async findAll(query: QueryCategoryDto) {
     try {
-      const builder = Category.createQueryBuilder('category');
+      const builder = this.categoryRepository.createQueryBuilder('category');
       if (query.search) {
         builder.andWhere('category.name like :search', {
           search: `%${query.search}%`,
@@ -63,7 +68,9 @@ export class CategoriesService {
 
   async findOne(id: number) {
     try {
-      const category: Category = await Category.findOneBy({ id: id });
+      const category: Category = await this.categoryRepository.findOneBy({
+        id,
+      });
       if (!category) {
         throw new NotFoundException(`Category not found with id ${id}`);
       }
@@ -77,16 +84,18 @@ export class CategoriesService {
 
   async update(id: number, body: CreateCategoryDto) {
     try {
-      const category: Category = await Category.findOneBy({ id: id });
+      const category: Category = await this.categoryRepository.findOneBy({
+        id: id,
+      });
       if (!category) {
         throw new NotFoundException(`Category not found with id ${id}`);
       }
 
       const categoryName = body.name?.toLowerCase();
-      const existing = await Category.createQueryBuilder('category')
-        .where('category.name = :name', {
-          name: `%${categoryName}%`,
-        })
+
+      const existing = await this.categoryRepository
+        .createQueryBuilder('category')
+        .where('category.name = :name', { name: `%${categoryName}%` })
         .getOne();
       if (existing) {
         throw new BadRequestException(
@@ -95,7 +104,7 @@ export class CategoriesService {
       }
 
       category.name = body.name;
-      return await category.save();
+      return await this.categoryRepository.save(category);
     } catch (error) {
       console.log(error);
       throw new HttpException(error.message, error.status);
@@ -104,12 +113,14 @@ export class CategoriesService {
 
   async remove(id: number) {
     try {
-      const category: Category = await Category.findOneBy({ id: id });
+      const category: Category = await this.categoryRepository.findOneBy({
+        id,
+      });
       if (!category) {
         throw new NotFoundException(`Category not found with id ${id}`);
       }
 
-      await category.remove();
+      await this.categoryRepository.remove(category);
 
       return {
         success: true,

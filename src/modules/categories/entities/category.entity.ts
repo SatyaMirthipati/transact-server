@@ -12,7 +12,7 @@ export class Category extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ type: 'char', nullable: false })
+  @Column({ type: 'varchar', nullable: false })
   name: string;
 
   @CreateDateColumn()
