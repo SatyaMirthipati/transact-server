@@ -162,7 +162,7 @@ export class AuthService {
 
       const user = new User();
       user.name = body.name;
-      user.role = body.role;
+      user.role = UserTypes.USER,
       user.mobile = body.mobile;
       user.email = body.email;
       user.password = body.mobile;
@@ -186,8 +186,8 @@ export class AuthService {
       const { username, password } = body;
 
       const user: User = await this.userRepository.createQueryBuilder('u')
-        .andWhere('u.mobile = :username', { mobile: username })
-        .orWhere('u.email = :username', { email: username })
+        .where('u.mobile = :mobile', { mobile: username })
+        .orWhere('u.email = :email', { email: username })
         .getOne();
       if (!user) {
         throw new NotFoundException(`User not found ${body.username}`);

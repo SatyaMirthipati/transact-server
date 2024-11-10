@@ -13,7 +13,7 @@ export class CreateUserDto {
   @IsString()
   name: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   @IsString()
   @IsIn(Object.keys(UserTypes))
   role: string;
