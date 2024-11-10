@@ -15,7 +15,7 @@ export class Income extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ nullable: true })
+  @Column({ unique: true, nullable: true })
   userId: number;
 
   @ManyToOne(() => User)
