@@ -1,15 +1,19 @@
-import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as moment from 'moment';
 import { OtpType, UserTypes } from 'src/utils/constants';
 import { In } from 'typeorm';
 import { Category } from '../categories/entities/category.entity';
 import { User } from '../users/entities/user.entity';
-import { OtpDto, RegisterByOtpDto, VerifyOtpDto } from './dto/auth.dto';
+import { OtpDto, RegisterByOtpDto, UserLoginDto, VerifyOtpDto } from './dto/auth.dto';
+import { UserRepository } from '../users/repository/user.repository';
+import * as bcrypt from 'bcrypt';
+import { CreateUserDto } from '../users/dto/user.dto';
+
 
 @Injectable()
 export class AuthService {
-  constructor(private jwtService: JwtService) {}
+  constructor(private jwtService: JwtService, private readonly userRepository: UserRepository) { }
 
   async requestOtp(body: OtpDto) {
     try {
@@ -136,65 +140,70 @@ export class AuthService {
     }
   }
 
-  // async adminLogin(body: AdminLoginDto) {
-  //   try {
-  //     const user = await this.userModel
-  //       .findOne({
-  //         $or: [{ mobileNumber: body.username }, { email: body.username }],
-  //         role: UserTypes.ADMIN,
-  //       })
-  //       .exec();
-  //     if (!user) {
-  //       throw new NotFoundException(
-  //         `We can't find the user with ${body.username}`,
-  //       );
-  //     }
+  async register(body: CreateUserDto) {
+    try {
+      const existing: User = await this.userRepository
+        .createQueryBuilder('user')
+        .where('user.mobile= :mobile', { mobile: body.mobile })
+        .orWhere('user.email= :email', { email: body.email })
+        .getOne();
+      if (existing) {
+        throw new BadRequestException(
+          `User already exists with mobile number ${body.mobile} or email ${body.email}`,
+        );
+      }
 
-  //     //password validation
-  //     const verify = await bcrypt.compare(body.password, user.password);
-  //     if (!verify) {
-  //       throw new UnauthorizedException(`Wrong password for ${body.username}`);
-  //     }
+      const dateOfBirth = moment(body.dateOfBirth);
+      const age: number = moment().diff(dateOfBirth, 'years');
 
-  //     const payload = {
-  //       sub: user?._id,
-  //       userId: user?._id,
-  //     };
+      const categories: Category[] = await Category.findBy({
+        id: In(body.categoryIds),
+      });
 
-  //     return {
-  //       access_token: this.jwtService.sign(payload),
-  //     };
-  //   } catch (error) {
-  //     console.log(error);
-  //     throw new HttpException(error.message, error.status);
-  //   }
-  // }
+      const user = new User();
+      user.name = body.name;
+      user.role = body.role;
+      user.mobile = body.mobile;
+      user.email = body.email;
+      user.password = body.mobile;
+      user.dateOfBirth = body.dateOfBirth;
+      user.age = age;
+      user.gender = body.gender;
+      user.address = body.address;
+      user.imageKey = body.imageKey;
+      user.categories = categories;
+      await user.save();
 
-  // async resetPassword(body: ResetPasswordDto) {
-  //   try {
-  //     const decoded: any = this.jwtService.decode(body.token);
+      return await this.login(user);
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(error.message, error.status);
+    }
+  }
 
-  //     const password = await bcrypt.hash(body.password, 10);
+  async userLogin(body: UserLoginDto) {
+    try {
+      const { username, password } = body;
 
-  //     const user = await this.userModel
-  //       .findOneAndUpdate(
-  //         { mobileNumber: decoded.mobile },
-  //         {
-  //           password: password,
-  //         },
-  //       )
-  //       .exec();
+      const user: User = await this.userRepository.createQueryBuilder('u')
+        .andWhere('u.mobile = :username', { mobile: username })
+        .orWhere('u.email = :username', { email: username })
+        .getOne();
+      if (!user) {
+        throw new NotFoundException(`User not found ${body.username}`);
+      }
 
-  //     if (!user) {
-  //       throw new NotFoundException(
-  //         `We couldn't find a user with that mobile number. ${decoded.mobile} Please try again.`,
-  //       );
-  //     }
+      const isValid = await bcrypt.compare(password, user.password);
+      if (!isValid) {
+        throw new BadRequestException('Invalid Password');
+      }
 
-  //     return { success: true };
-  //   } catch (error) {
-  //     console.log(error);
-  //     throw new HttpException(error.message, error.status);
-  //   }
-  // }
+      return {
+        access_token: this.jwtService.sign({ id: user.id, userId: user.id }),
+      };
+    } catch (error) {
+      console.log(error);
+      throw new HttpException(error.message, error.status);
+    }
+  }
 }

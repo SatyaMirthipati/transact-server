@@ -79,7 +79,7 @@ export class RegisterByOtpDto {
   categoryIds: number[];
 }
 
-export class AdminLoginDto {
+export class UserLoginDto {
   @IsNotEmpty()
   @IsString()
   username: string;
